@@ -1,38 +1,35 @@
 import time
-from inputimeout import inputimeout, TimeoutOccurred
-from multiprocessing import shared_memory, sharedctypes
 import threading
 
-
-DEBUG_ON = True
+DEBUG_ON = False
 
 # Building setup
 TOP_FLOOR = 10
 BOTTOM_FLOOR = 1
 NUM_FLOORS = TOP_FLOOR - BOTTOM_FLOOR + 1
-NO_FLOOR = 0
+
 # Elevator car travel direction
 ST = "stopped"
 UP = "moving_up"
 DN = "moving_dn"
-direction = ST
-curr_floor = BOTTOM_FLOOR
+
+
+#direction = ST
+#curr_floor = BOTTOM_FLOOR
 
 # Wait time
 CAR_MOVEMENT_TIME_BETWEEN_FLOORS = 2
 DOOR_WAIT = 5
 
-
+# Class to store the button row as '0's and '1's.
 class shareddata:
-    #buttons = []
-    #direction = ST
+    
     def __init__(self):
         self.buttons = [0 for i in range(NUM_FLOORS)] 
         self.direction = ST
         self.curr_floor = BOTTOM_FLOOR
 
-    def lowest_button_on(self):
-        
+    def lowest_button_on(self): 
         for i, x in enumerate(self.buttons):
             
             if x == 1:
@@ -59,32 +56,24 @@ class shareddata:
         self.buttons[i] = 1
         return
         
-    target_floor = 0        # stop on this floor next
-    travel_direction = ST   # elevator direction of travel: UP or DN or ST
-    current_floor = 0       # current floor, position of the elevator
-    wake_controller = False # indicates if elevator_buttons pushed new floor button
-    lock = threading.Lock() # Mutex lock to ensure that only one thread is changing a variable at any time
+    
  
+# instantiate sharedData object
+sharedData = shareddata() 
 
-sharedData = shareddata() # instantiate object
-#shared_data.press_button(2-1)
-#print(shared_data.lowest_button_on())
 
 def elevator_car():
-## Begin Elevator car section
-    k = 0
-    while True:
-        k += 1
-        
+## Begin Elevator car thread
+    while True:    
         # Print current floor
         print("elevator_car(): curr_floor=", sharedData.curr_floor);
-
+        print("elevator_car(): Direction: ", sharedData.direction)
         if (DEBUG_ON):
-            print("*** Buttons: ", sharedData.buttons)
-            print("*** Lowest button: ", sharedData.lowest_button_on())
-            print("*** Highest button: ", sharedData.highest_button_on())
-            print("*** Any button pressed: ", sharedData.any_button_pressed())
-            print("*** Direction: ", sharedData.direction)
+            print("*** elevator_car(): Buttons: ", sharedData.buttons)
+            print("*** elevator_car(): Lowest button: ", sharedData.lowest_button_on())
+            print("*** elevator_car(): Highest button: ", sharedData.highest_button_on())
+            print("*** elevator_car(): Any button pressed: ", sharedData.any_button_pressed())
+            
       
         # Arrived on a floor whose button was pushed
             
@@ -119,27 +108,27 @@ def elevator_car():
         if sharedData.direction == DN and sharedData.any_button_pressed():
             sharedData.curr_floor = sharedData.curr_floor - 1
         time.sleep(CAR_MOVEMENT_TIME_BETWEEN_FLOORS)
-    ## End Elevator car section
+## End Elevator car thread
 
 def elevator_buttons():
-# Buttons read section begin
-    j = 0
+## Begin buttons read thread
     while True:
         f = input("Input floor number:\n")
         f = eval (f)
         if f >= BOTTOM_FLOOR and f <= TOP_FLOOR:
-            #sharedData.lock.acquire()
+          
             # Light/set button on button column
             sharedData.set_button(f-1)
-            #sharedData.lock.release()
-            if (DEBUG_ON):
-                print("elevator_buttons(): sharedData.highest_button_on()", sharedData.highest_button_on())
+            print("elevator_buttons(): button pushed for target floor=", f)
             
+            if (DEBUG_ON):
+                print("*** elevator_buttons(): sharedData.highest_button_on()", sharedData.highest_button_on())
+            
+## End buttons read thread
 
 def controller():
- ## Controller section begin
-    while True:
-     
+## Begin controller thread
+    while True:  
         if sharedData.any_button_pressed() and sharedData.direction == ST and sharedData.lowest_button_on() > sharedData.curr_floor:
             sharedData.direction = UP
 
@@ -149,7 +138,7 @@ def controller():
         if sharedData.any_button_pressed()==False:
             sharedData.direction = ST
 
-    ## End Controller section
+## End controller thread
 
 
 # Launch threads from main program
@@ -169,5 +158,3 @@ if __name__ == "__main__":
     e1.join()
     b1.join()
     c1.join()
-    
-    
