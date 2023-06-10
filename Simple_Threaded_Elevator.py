@@ -13,15 +13,11 @@ ST = "stopped"
 UP = "moving_up"
 DN = "moving_dn"
 
-
-#direction = ST
-#curr_floor = BOTTOM_FLOOR
-
 # Wait time
 CAR_MOVEMENT_TIME_BETWEEN_FLOORS = 2
 DOOR_WAIT = 5
 
-# Class to store the button row as '0's and '1's.
+# Class to store, share, and manipulate the elevator button column as '0's and '1's.
 class shareddata:
     
     def __init__(self):
@@ -57,13 +53,11 @@ class shareddata:
         return
         
     
- 
 # instantiate sharedData object
 sharedData = shareddata() 
 
-
-def elevator_car():
 ## Begin Elevator car thread
+def elevator_car():
     while True:    
         # Print current floor
         print("elevator_car(): curr_floor=", sharedData.curr_floor);
@@ -80,26 +74,12 @@ def elevator_car():
         if sharedData.any_button_pressed() and (sharedData.direction == UP or sharedData.direction == DN) and sharedData.buttons[sharedData.curr_floor-1] == 1:
             # Unlight/clear button
             sharedData.clear_button(sharedData.curr_floor-1)
-            #sharedData.buttons[curr_floor] = 0
+           
             print("elevator_car(): Open door on floor: ", sharedData.curr_floor)
             time.sleep(DOOR_WAIT)
             print ("elecator_car(): Close door on floor:", sharedData.curr_floor)
           
-            # No more buttons pressed, stop the elevator car
-            if sharedData.any_button_pressed() == False:
-                sharedData.direction = ST
-               
-            # Logic for no overruns. This is the situation when elevator gets to the highest floor it was directed to, moving up, and there are no more floors above called, but
-            # there are lower floors we need to go. This means changing direction of travel from up to down. 
-           
-            if sharedData.any_button_pressed() == True and sharedData.highest_button_on() < sharedData.curr_floor:
-                sharedData.direction = DN
 
-            # Similarly, when going down, once stopped on the lowest floor, and there
-            # is an higher floor pushed, change direction to up.
-
-            if sharedData.any_button_pressed() == True and sharedData.lowest_button_on() > sharedData.curr_floor:
-                sharedData.direction = UP
 
 
         # Move elevator car
@@ -107,11 +87,12 @@ def elevator_car():
             sharedData.curr_floor = sharedData.curr_floor + 1 
         if sharedData.direction == DN and sharedData.any_button_pressed():
             sharedData.curr_floor = sharedData.curr_floor - 1
+        
         time.sleep(CAR_MOVEMENT_TIME_BETWEEN_FLOORS)
 ## End Elevator car thread
 
-def elevator_buttons():
 ## Begin buttons read thread
+def elevator_buttons():
     while True:
         f = input("Input floor number:\n")
         f = eval (f)
@@ -126,18 +107,34 @@ def elevator_buttons():
             
 ## End buttons read thread
 
-def controller():
 ## Begin controller thread
-    while True:  
+def controller():
+    while True:
+        # If elevator is currently below the lowest floor pressed, then start traveling up.
         if sharedData.any_button_pressed() and sharedData.direction == ST and sharedData.lowest_button_on() > sharedData.curr_floor:
             sharedData.direction = UP
-
+            
+        # If elevator is currently above the highest floor pressed, then start traveling down.
         if sharedData.any_button_pressed() and sharedData.direction == ST and sharedData.highest_button_on() < sharedData.curr_floor:
             sharedData.direction = DN
 
+        # If no button is pressed then stop the elevator.
         if sharedData.any_button_pressed()==False:
             sharedData.direction = ST
+               
+        # Logic for no overruns. This is the situation when elevator 
+        # gets to the highest floor it was directed to, moving up, 
+        # and there are no more floors above called, but
+        # there are lower floors we need to go. This means changing direction of travel from up to down. 
+       
+        if sharedData.any_button_pressed() and sharedData.highest_button_on() < sharedData.curr_floor:
+            sharedData.direction = DN
 
+        # Similarly, when going down, once stopped on the lowest floor, and there
+        # is an higher floor pushed, change direction to up.
+
+        if sharedData.any_button_pressed() and sharedData.lowest_button_on() > sharedData.curr_floor:
+            sharedData.direction = UP
 ## End controller thread
 
 
