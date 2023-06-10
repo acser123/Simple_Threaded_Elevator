@@ -55,6 +55,10 @@ class shareddata:
         self.buttons[i] = 0
         return
 
+    def set_button(self, i):
+        self.buttons[i] = 1
+        return
+        
     target_floor = 0        # stop on this floor next
     travel_direction = ST   # elevator direction of travel: UP or DN or ST
     current_floor = 0       # current floor, position of the elevator
@@ -126,7 +130,7 @@ def elevator_buttons():
         if f >= BOTTOM_FLOOR and f <= TOP_FLOOR:
             #sharedData.lock.acquire()
             # Light/set button on button column
-            sharedData.buttons[f-1]=1
+            sharedData.set_button(f-1)
             #sharedData.lock.release()
             if (DEBUG_ON):
                 print("elevator_buttons(): sharedData.highest_button_on()", sharedData.highest_button_on())
