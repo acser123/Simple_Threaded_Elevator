@@ -3,6 +3,7 @@ import threading
 
 DEBUG_ON = True
 
+
 # Building setup
 TOP_FLOOR = 10
 BOTTOM_FLOOR = 1
