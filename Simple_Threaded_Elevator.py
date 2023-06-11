@@ -54,6 +54,7 @@ class shareddata:
         
     
 # instantiate sharedData object
+# this object stores the button column and travel direction
 sharedData = shareddata() 
 
 ## Begin Elevator car thread
