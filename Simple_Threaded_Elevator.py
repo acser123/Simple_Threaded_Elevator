@@ -1,7 +1,7 @@
 import time
 import threading
 
-DEBUG_ON = False
+DEBUG_ON = True
 
 # Building setup
 TOP_FLOOR = 10
